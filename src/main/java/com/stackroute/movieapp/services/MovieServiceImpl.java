@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.stackroute.movieapp.domain.Movie;
+import com.stackroute.movieapp.exception.MovieAlreadyExist;
+import com.stackroute.movieapp.exception.MovieNotFound;
 import com.stackroute.movieapp.repositories.MovieRepository;
 
 @Service
@@ -18,7 +20,10 @@ public class MovieServiceImpl implements MovieService {
 		this.movieRepository = movieRepository;
 	}
 
-	public Movie saveMovie(Movie movie) {
+	public Movie saveMovie(Movie movie) throws MovieAlreadyExist {
+		/*if(movieRepository.getByName(movie.getTitle()) != null) {
+			throw new MovieAlreadyExist("Movie ALready Exists");
+		}*/
 		return movieRepository.save(movie);
 	}
 	
@@ -36,11 +41,13 @@ public class MovieServiceImpl implements MovieService {
 		return movie;
 	}
 
-	public Optional<Movie> getByMovieId(int id) {
+	public Optional<Movie> getByMovieId(int id) throws MovieNotFound{
+		if(movieRepository.existsById(id)) {
+			throw new MovieNotFound("Movie not found");
+		}
 		return movieRepository.findById(id);
 	}
 
-	@Override
 	public Iterable<Movie> getByName(String name) {
 		return movieRepository.getByName(name);
 	}

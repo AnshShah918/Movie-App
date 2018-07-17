@@ -2,6 +2,8 @@ package com.stackroute.movieapp.controller;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stackroute.movieapp.domain.Movie;
+import com.stackroute.movieapp.exception.MovieAlreadyExist;
+import com.stackroute.movieapp.exception.MovieNotFound;
 import com.stackroute.movieapp.services.MovieService;
 
 @RestController
@@ -22,6 +26,7 @@ import com.stackroute.movieapp.services.MovieService;
 public class MovieController {
 	
 	private MovieService movieService;
+	 private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
 	public MovieController(MovieService movieService) {
@@ -30,17 +35,31 @@ public class MovieController {
 	
 	   @PostMapping("/movie")
 	    public ResponseEntity<?> saveMovie(@RequestBody Movie movie) {
+		   try {
 	        return new ResponseEntity<Movie> (movieService.saveMovie(movie), HttpStatus.CREATED);
+		   }catch (MovieAlreadyExist e){
+			   return new ResponseEntity<String> ("Not Found", HttpStatus.CONFLICT);
+		   }
 	    }
 	    
 	    @GetMapping("/movies")
 	    public ResponseEntity<?> getAllMovies() {
+	    	 logger.debug("This is a debug message");
+	         logger.info("This is an info message");
+	         logger.warn("This is a warn message");
+	         logger.error("This is an error message");
 	        return new ResponseEntity<Iterable<Movie>> (movieService.getAllMovie(), HttpStatus.OK);
 	    }
 	    
 	    @GetMapping("/movie/{id}")
 	    public ResponseEntity<?> getMovieById(@PathVariable int id) {
-	        return new ResponseEntity<Optional<Movie>> (movieService.getByMovieId(id), HttpStatus.OK);
+	    	try {
+	    		return new ResponseEntity<Optional<Movie>> (movieService.getByMovieId(id), HttpStatus.OK);
+				
+			} catch (MovieNotFound e) {
+				return new ResponseEntity<String> ("Not Found", HttpStatus.CONFLICT);
+			}
+	        
 	    }
 	    
 	    @DeleteMapping("/movie/{id}")
